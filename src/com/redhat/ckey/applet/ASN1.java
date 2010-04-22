@@ -57,124 +57,113 @@ import javacard.framework.Util;
 
 /**
  * ASN1 parser Class
- *
- * <p>This Simplistic ASN.1 parser does not interpret tags, it simply finds
- * elements based on where their fields are supposed to wind up at. </p>
- *
- *
+ * 
+ * <p>
+ * This Simplistic ASN.1 parser does not interpret tags, it simply finds
+ * elements based on where their fields are supposed to wind up at.
+ * </p>
+ * 
+ * 
  * Object fields:
+ * 
  * <pre>
  *    short[] newSize; // way to get around java's restrictions on pass by ref. 
  *    byte[] data
  * </pre>
- *
+ * 
  * @author Robert Relyea
  * @version 0.0.1
- *
+ * 
  */
-public class ASN1
-{
-    public static final short SW_BAD_DER_DATA = (short)0x9cd0;
-    private final short NEXT = 0;
-    private final short SIZE = 1;
-    private final short END  = 2;
-    private short[] params;
+public class ASN1 {
+	public static final short SW_BAD_DER_DATA = (short) 0x9cd0;
+	private final short NEXT = 0;
+	private final short SIZE = 1;
+	private final short END = 2;
+	private short[] params;
 
-    public ASN1() 
-    {
-	params=JCSystem.makeTransientShortArray((short)3,
-						JCSystem.CLEAR_ON_DESELECT);
-    }
-  
-    public short GetEnd()
-    {
-	return params[END];
-    } 
-
-    public short GetSize()
-    {
-	return params[SIZE];
-    } 
-
-    public short GetNext()
-    {
-	return params[NEXT];
-    } 
-
-    public byte GetTag(byte buf[], short offset, short end)
-    {
-	if (end <= offset) {
-	    ISOException.throwIt(SW_BAD_DER_DATA);
+	public ASN1() {
+		params = JCSystem.makeTransientShortArray((short) 3, JCSystem.CLEAR_ON_DESELECT);
 	}
-	return buf[offset];
-    }
-	
-    public short Unwrap(byte buf[], short offset, short end, short dbg)
-    {
-	byte tag;
-	byte len;
-	short length = 0;
 
-	if (end < (short)(offset+2)) {
-	    ISOException.throwIt(SW_BAD_DER_DATA);
+	public short GetEnd() {
+		return params[END];
 	}
-	tag = buf[offset++];
-	if (tag == 0) {
-	    ISOException.throwIt(SW_BAD_DER_DATA);
-	}
-	len = buf[offset++];
-	length = Util.makeShort((byte)0,len);
 
-	if ((len & 0x80) != 0) {
-	    short count = Util.makeShort((byte)0,(byte)(len & 0x7f));
-	    if (end < (short)(offset+count)) {
-	        ISOException.throwIt(SW_BAD_DER_DATA);
-	    }
-	    if (count > 2) {
-	        ISOException.throwIt(SW_BAD_DER_DATA);
-	    }
-            length = 0;
-	    while (count-- > 0) {
-		length = (short)((length << 8) 
-				| Util.makeShort((byte)0,buf[offset++]));
-	    }
+	public short GetSize() {
+		return params[SIZE];
 	}
-	params[SIZE] = length;
-	params[NEXT] = ((short)(offset+length));
-	params[END] = ((short)(offset+length));
-	return offset;
-    }
 
-    public short Skip(byte buf[], short offset, short end, short dbg)
-    {
-	Unwrap(buf,offset,end,dbg);
-	return params[NEXT];
-    }
+	public short GetNext() {
+		return params[NEXT];
+	}
 
-    public short UnwrapBitString(byte buf[], short offset, short end, short dbg)
-    {
-	if (buf[offset] != 0) {
-	    ISOException.throwIt(SW_BAD_DER_DATA);
+	public byte GetTag(byte buf[], short offset, short end) {
+		if (end <= offset) {
+			ISOException.throwIt(SW_BAD_DER_DATA);
+		}
+		return buf[offset];
 	}
-	if (end < (short)(offset+1)) {
-	    ISOException.throwIt(SW_BAD_DER_DATA);
-	}
-	params[SIZE]--;
-	return (short)(offset+1);
-    }
 
-    public short Signed2Unsigned(byte buf[], short offset, short end, short dbg)
-    {
-	short startOffset = offset;
-	short startSize=params[SIZE];
-	for (; offset < end && buf[offset] == 0 ; offset++){
-	    params[SIZE]--;
+	public short Unwrap(byte buf[], short offset, short end, short dbg) {
+		byte tag;
+		byte len;
+		short length = 0;
+
+		if (end < (short) (offset + 2)) {
+			ISOException.throwIt(SW_BAD_DER_DATA);
+		}
+		tag = buf[offset++];
+		if (tag == 0) {
+			ISOException.throwIt(SW_BAD_DER_DATA);
+		}
+		len = buf[offset++];
+		length = Util.makeShort((byte) 0, len);
+
+		if ((len & 0x80) != 0) {
+			short count = Util.makeShort((byte) 0, (byte) (len & 0x7f));
+			if (end < (short) (offset + count)) {
+				ISOException.throwIt(SW_BAD_DER_DATA);
+			}
+			if (count > 2) {
+				ISOException.throwIt(SW_BAD_DER_DATA);
+			}
+			length = 0;
+			while (count-- > 0) {
+				length = (short) ((length << 8) | Util.makeShort((byte) 0, buf[offset++]));
+			}
+		}
+		params[SIZE] = length;
+		params[NEXT] = ((short) (offset + length));
+		params[END] = ((short) (offset + length));
+		return offset;
 	}
-	if (offset >= end) {
-	    ISOException.throwIt(SW_BAD_DER_DATA);
+
+	public short Skip(byte buf[], short offset, short end, short dbg) {
+		Unwrap(buf, offset, end, dbg);
+		return params[NEXT];
 	}
-	return offset;
-    }
+
+	public short UnwrapBitString(byte buf[], short offset, short end, short dbg) {
+		if (buf[offset] != 0) {
+			ISOException.throwIt(SW_BAD_DER_DATA);
+		}
+		if (end < (short) (offset + 1)) {
+			ISOException.throwIt(SW_BAD_DER_DATA);
+		}
+		params[SIZE]--;
+		return (short) (offset + 1);
+	}
+
+	public short Signed2Unsigned(byte buf[], short offset, short end, short dbg) {
+		short startOffset = offset;
+		short startSize = params[SIZE];
+		for (; offset < end && buf[offset] == 0; offset++) {
+			params[SIZE]--;
+		}
+		if (offset >= end) {
+			ISOException.throwIt(SW_BAD_DER_DATA);
+		}
+		return offset;
+	}
 }
-
-
