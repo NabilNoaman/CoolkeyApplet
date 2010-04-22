@@ -61,12 +61,26 @@
 
 package com.redhat.ckey.applet;
 
-import javacard.framework.*;
-import javacard.security.*;
+import javacard.framework.APDU;
+import javacard.framework.Applet;
+import javacard.framework.ISO7816;
+import javacard.framework.ISOException;
+import javacard.framework.JCSystem;
+import javacard.framework.OwnerPIN;
+import javacard.framework.Util;
+import javacard.security.DESKey;
+import javacard.security.Key;
+import javacard.security.KeyBuilder;
+import javacard.security.KeyPair;
+import javacard.security.MessageDigest;
+import javacard.security.PrivateKey;
+import javacard.security.RSAPrivateCrtKey;
+import javacard.security.RSAPublicKey;
+import javacard.security.RandomData;
+import javacard.security.Signature;
 import javacardx.crypto.Cipher;
-
-import visa.openplatform.ProviderSecurityDomain;
 import visa.openplatform.OPSystem;
+import visa.openplatform.ProviderSecurityDomain;
 
 // Referenced classes of package com.redhat.ckey.applet:
 //	    MemoryManager, ObjectManager, ASN1
